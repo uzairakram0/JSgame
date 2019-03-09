@@ -1,2 +1,2 @@
 # JSgame
-This is a repo for my an online game
+This is a repo for my online game
