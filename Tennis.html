@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Tennis</title>
+	<style type="text/css">
+		#mainHeader{
+			background: black;
+			color: white;
+			padding: 10px;
+		}
+	</style>
+</head>
+<body>
+	<header id="mainHeader">
+	<h1 align="center">Tennis</h1>
+	</header>
+	<p align="center">
+	<canvas id="gameField" width="800" height="600"></canvas>
+	<script type="text/javascript">
+/* GLOBAL VARIABLES */
+//COURT
+		var COURT;
+		var COURT_CONTEXT;
+//ball
+		var BALL_X = 100;
+		var BALL_Y = 100;
+		var BALL_SPEED_X = 10;
+		var BALL_SPEED_Y = 10;
+//paddle
+		var RACQUET1_Y = 250;								// Bottom of racquet 1
+		var RACQUET2_Y = 250;								// Bottom of rqcquet 2
+		const RACQUET_HEIGHT = 100;
+		const RACQUET_THICKNESS = 10;
+//PLAYER1SCORE
+		const WINNING_SCORE = 5;
+		var PLAYER1SCORE = 0;
+		var PLAYER2SCORE = 0;
+
+//CALCULATES AND RETURNS POITION OF THE MOUSE
+		function calculateMousePosition(evt) {
+
+			var rect = COURT.getBoundingClientRect();
+			var root = document.documentElement;
+			var mouseX = evt.clientX - rect.left - root.scrollLeft;
+			var mouseY = evt.clientY - rect.top -root.scrollTop;
+
+			return{
+				x:mouseX,
+				y:mouseY
+			};
+
+		}
+
+// initiates the program
+		window.onload = function(){
+
+			COURT = document.getElementById('gameField');		// This generates the square canvas or tennis COURT
+			COURT_CONTEXT = COURT.getContext('2d');					// This is the graphics info to draw images inside court
+
+			var framesPerSecond = 30;
+
+			setInterval(function(){													// this codeblock redraws everything in every frame
+				totalMovement()
+				colorGameElements()
+			}, 1000/framesPerSecond);
+
+			COURT.addEventListener('mousemove',function(evt){		// This codebloack sets the position of the racket according to mouse position
+				var mousePos = calculateMousePosition(evt);
+				RACQUET1_Y = mousePos.y - (RACQUET_HEIGHT/2);
+			});
+		}
+
+		function computerMovement(){
+
+			var RACQUET2_YCenter = RACQUET2_Y + (RACQUET_HEIGHT/2);
+
+			if(BALL_X > (COURT.width/2)){
+				if (RACQUET2_YCenter < BALL_Y - 35){
+					RACQUET2_Y += 15;
+				}
+				else if (RACQUET2_YCenter > BALL_Y + 35)
+				{
+					RACQUET2_Y -= 15;
+				}
+			}
+
+		}
+
+		function totalMovement(){
+			computerMovement();
+
+			BALL_X += BALL_SPEED_X;
+			BALL_Y += BALL_SPEED_Y;
+//if ball hits the player1 side
+			if (BALL_X < 0){
+				if(BALL_Y > RACQUET1_Y && BALL_Y < RACQUET1_Y + RACQUET_HEIGHT){
+					BALL_SPEED_X = - BALL_SPEED_X;
+					var deltaY = BALL_Y-(RACQUET1_Y+RACQUET_HEIGHT/2);
+					BALL_SPEED_Y = deltaY * 0.33;
+					console.log(PLAYER1SCORE);
+				}else{
+					PLAYER2SCORE +=1;
+					console.log(PLAYER2SCORE); console.log("computer");
+				ballReset();
+			}
+			}
+
+// if ball hits the player2 side
+			if (BALL_X > COURT.width){
+				if(BALL_Y > RACQUET2_Y && BALL_Y < RACQUET2_Y + RACQUET_HEIGHT){
+				BALL_SPEED_X = -BALL_SPEED_X;
+				var deltaY = BALL_Y-(RACQUET2_Y+RACQUET_HEIGHT/2);
+				BALL_SPEED_Y = deltaY * 0.33;
+			} else{
+				PLAYER1SCORE += 1;
+				console.log(PLAYER1SCORE); console.log("Player");
+				ballReset();
+			}
+			}
+			if(BALL_Y < 0){
+				BALL_SPEED_Y = -BALL_SPEED_Y;
+			}
+			if(BALL_Y > COURT.height){
+				BALL_SPEED_Y = -BALL_SPEED_Y;
+			}
+		}
+
+		function ballReset(){
+			if (PLAYER1SCORE >= WINNING_SCORE){
+				alert("You Win!");
+			}else if (PLAYER2SCORE >= WINNING_SCORE){
+				alert("You Lose!");
+			}
+
+			if (PLAYER1SCORE >= WINNING_SCORE || PLAYER2SCORE >= WINNING_SCORE){
+				PLAYER1SCORE = 0;
+				PLAYER2SCORE = 0;
+			}
+
+			BALL_SPEED_X = -BALL_SPEED_X;
+			BALL_X =  COURT.width/2;
+			BALL_Y = COURT.height/2;
+		}
+
+		function colorGameElements(){
+
+			// This is game COURT.
+			colorRect(0,0,COURT.width,COURT.height,'green');
+
+			// This is left played paddle(paddle 1).
+			colorRect(0,RACQUET1_Y,RACQUET_THICKNESS,RACQUET_HEIGHT,'white');
+
+			// This is right played paddle(paddle 2).
+			colorRect(COURT.width - RACQUET_THICKNESS, RACQUET2_Y, RACQUET_THICKNESS, RACQUET_HEIGHT,'white');
+
+			// This is the balls.
+			COURT_CONTEXT.fillStyle = 'white';
+			COURT_CONTEXT.beginPath();
+			COURT_CONTEXT.arc(BALL_X,BALL_Y,10,0,Math.PI*2,true);
+			COURT_CONTEXT.fill();
+
+			// Score display
+			COURT_CONTEXT.fillText(PLAYER1SCORE, 100, 100);
+			COURT_CONTEXT.fillText(PLAYER2SCORE, COURT.width - 100, 100);
+		}
+
+		function colorRect(leftX, topY, width, height, drawColor){
+			COURT_CONTEXT.fillStyle = drawColor;
+			COURT_CONTEXT.fillRect(leftX, topY, width, height);
+		}
+
+	</script>
+</p>
+</body>
+</html>
